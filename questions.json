@@ -1,12 +1,16 @@
-[
-  {
-    "question": "What is the capital of France?",
-    "options": ["Berlin", "Paris", "Madrid", "London"],
-    "answer": "Paris"
-  },
-  {
-    "question": "Which planet is known as the Red Planet?",
-    "options": ["Earth", "Mars", "Jupiter", "Venus"],
-    "answer": "Mars"
-  }
-]
+{
+    "title": "help",
+    "time_limit_minutes": 1,
+    "questions": [
+        {
+            "question": "how",
+            "options": [
+                "how",
+                "q",
+                "q",
+                "e"
+            ],
+            "answer": "how"
+        }
+    ]
+}
