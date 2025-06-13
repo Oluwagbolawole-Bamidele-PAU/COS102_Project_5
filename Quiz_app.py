@@ -3,6 +3,8 @@ from tkinter import filedialog, messagebox, scrolledtext
 import json
 import os  # Import os module for path operations
 
+
+
 # Usernames and passwords of users
 # format is username : password
 USERS = {
@@ -36,7 +38,12 @@ STUDENT_PRACTICE_QUESTIONS_FILE = "student_practice_questions.json"
 class QuizApp:
     def __init__(self):
         self.root = tk.Tk()
-        # Removed: self.root.withdraw() - This was hiding the main window
+        # Set the root window to be fully transparent initially
+        # This prevents it from flashing even if it's briefly mapped before withdrawing
+        self.root.wm_attributes('-alpha', 0)
+        self.root.withdraw()
+        # Force Tkinter to process the withdraw and alpha commands immediately
+        self.root.update_idletasks()
 
         self.user_role = None
 
@@ -50,9 +57,9 @@ class QuizApp:
         self.questions = self.active_quiz_data["questions"]  # Reference to the active quiz's questions list
 
         self.current_question = 0  # For student quiz navigation
-        self.selected_answers = {}  # For student quiz answers (question_index: selected_option_text)
+        self.selected_answers = {}  # For student quiz answers
 
-        # New variables for question creation flow (Lecturer)
+        # New variables for question creation flow
         self.newly_created_questions = []  # Temporary storage for questions being created
         self.current_question_index_creation = 0  # Index for navigating creation forms
         self.create_win = None  # Reference to the question creation Toplevel window
@@ -63,25 +70,19 @@ class QuizApp:
         self.current_quiz_title_being_created = ""  # To persistently store the quiz title during creation flow
         self.current_quiz_time_limit_being_created = 0  # New: To persistently store the quiz time limit during creation flow
 
-        # New variables for student practice question creation flow
-        self.student_practice_questions = []  # Stores questions created by the student
-        self.current_student_q_index_creation = 0
-        self.student_create_win = None  # Reference to the student question creation Toplevel window
-        self.student_q_title_entry = None  # To hold the Tkinter Entry for student quiz title
-        self.student_num_q_entry = None  # To hold the Tkinter Entry for number of student questions
-        self.current_student_quiz_title = ""  # To persistently store the quiz title during student creation flow
-
         self.timer_seconds = 0  # Will be set dynamically by quiz data
         self.timer_running = False
-        self.timer_id = None  # To store the after method ID for timer cancellation
 
         # --- Persistence: Load questions at startup ---
         self._load_questions_on_startup()
-        self._load_student_practice_questions_on_startup()  # Load student practice questions
 
         # Start with the role selection window
         self.role_selection_window()
+
+        # The main event loop for the entire application
         self.root.mainloop()
+
+
 
     def _on_button_enter(self, event):
         """Changes button background on mouse enter."""
@@ -271,7 +272,8 @@ class QuizApp:
     def login_window(self):
         self.login_win = tk.Toplevel(self.root)
         self.login_win.title(f"Quiz System - Login ({self.chosen_role_for_login})")
-        self.login_win.geometry("300x220")
+        #was originally 300x220
+        self.login_win.geometry("300x290")
         self.login_win.protocol("WM_DELETE_WINDOW", self.root.destroy)
         self.login_win.config(bg=BG_COLOR)  # Set window background to white
 
@@ -828,7 +830,8 @@ class QuizApp:
         """Displays the student's main menu."""
         self.student_menu_win = tk.Toplevel(self.root)
         self.student_menu_win.title("Student Dashboard")
-        self.student_menu_win.geometry("400x280")  # Increased height for new button
+        #was originally 400x280
+        self.student_menu_win.geometry("500x280")  # Increased height for new button
         self.student_menu_win.protocol("WM_DELETE_WINDOW", lambda: self.return_to_role_selection(self.student_menu_win))
         self.student_menu_win.config(bg=BG_COLOR)
 

@@ -1,16 +1,36 @@
 {
-    "title": "help",
-    "time_limit_minutes": 1,
+    "title": "math quiz",
+    "time_limit_minutes": 5,
     "questions": [
         {
-            "question": "how",
+            "question": "2+2",
             "options": [
-                "how",
-                "q",
-                "q",
-                "e"
+                "3",
+                "4",
+                "6",
+                "5"
             ],
-            "answer": "how"
+            "answer": "4"
+        },
+        {
+            "question": "yg",
+            "options": [
+                "i",
+                "h",
+                "b",
+                "g"
+            ],
+            "answer": "g"
+        },
+        {
+            "question": "uygfgvcxdf",
+            "options": [
+                "23",
+                "6g",
+                "fh",
+                "dfg"
+            ],
+            "answer": "6g"
         }
     ]
 }
