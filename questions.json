@@ -1,106 +1,36 @@
 {
-    "title": "TestQuestion",
+    "title": "math quiz",
     "time_limit_minutes": 5,
     "questions": [
         {
-            "question": "What course is this project for",
+            "question": "2+2",
             "options": [
-                "MTH102",
-                "COS102",
-                "PHY102",
-                "NOT SURE"
-            ],
-            "answer": "COS102"
-        },
-        {
-            "question": "How many members are in this group",
-            "options": [
-                "6",
-                "8",
-                "7",
-                "10"
-            ],
-            "answer": "6"
-        },
-        {
-            "question": "What month is this",
-            "options": [
-                "December",
-                "January",
-                "May",
-                "June"
-            ],
-            "answer": "June"
-        },
-        {
-            "question": "What was the GUI library used",
-            "options": [
-                "Tkinter",
-                "Apple",
-                "Candle",
-                "Nothing"
-            ],
-            "answer": "Tkinter"
-        },
-        {
-            "question": "2 + 2",
-            "options": [
-                "1",
-                "9",
+                "3",
                 "4",
-                "0"
+                "6",
+                "5"
             ],
             "answer": "4"
         },
         {
-            "question": "Can humans jump",
+            "question": "yg",
             "options": [
-                "Yes",
-                "NO",
-                "Maybe",
-                "nope"
+                "i",
+                "h",
+                "b",
+                "g"
             ],
-            "answer": "Yes"
+            "answer": "g"
         },
         {
-            "question": "What are the three primary colors",
+            "question": "uygfgvcxdf",
             "options": [
-                "blue, red, yellow",
-                "green, orange, purple",
-                "white, black, brown",
-                "red, pink, purple"
+                "23",
+                "6g",
+                "fh",
+                "dfg"
             ],
-            "answer": "blue, red, yellow"
-        },
-        {
-            "question": "What country are you in",
-            "options": [
-                "Ghana",
-                "Togo",
-                "NIgeria",
-                "West Africa"
-            ],
-            "answer": "NIgeria"
-        },
-        {
-            "question": "which is the better IDE",
-            "options": [
-                "Vscode",
-                "Atom",
-                "Pycharm",
-                "Vim"
-            ],
-            "answer": "Pycharm"
-        },
-        {
-            "question": "What question number is this?",
-            "options": [
-                "Q 11",
-                "Q21",
-                "Q 71",
-                "Q 10"
-            ],
-            "answer": "Q 10"
+            "answer": "6g"
         }
     ]
 }
