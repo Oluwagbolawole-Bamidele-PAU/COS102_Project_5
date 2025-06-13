@@ -17,34 +17,24 @@ USER_ROLES = {
 }
 
 # Define color variables for easy modification
-BG_COLOR = 'white'  # Overall window background
-BUTTON_BG_COLOR = '#800080'  # Purple for button background
-BUTTON_HOVER_COLOR = '#A020F0'  # Slightly lighter purple for hover effect
-BUTTON_TEXT_COLOR = 'white'  # White text for buttons
-BUTTON_BORDER_COLOR = '#800080'  # Purple for button borders (unchanged, matches bg)
-ENTRY_BG_COLOR = 'white'  # Entry widget background color
-ENTRY_BORDER_COLOR = '#800080'  # Purple for entry borders
-ANSWERED_COLOR = '#D4EDDA'  # Light green for answered questions
-UNANSWERED_COLOR = '#F8D7DA'  # Light red for unanswered questions
-CURRENT_QUESTION_COLOR = '#CCE5FF'  # Light blue for current question
+BG_COLOR = 'white'
+BUTTON_BG_COLOR = '#800080'
+BUTTON_HOVER_COLOR = '#A020F0'
+BUTTON_TEXT_COLOR = 'white'
+BUTTON_BORDER_COLOR = '#800080'
+ENTRY_BG_COLOR = 'white'
+ENTRY_BORDER_COLOR = '#800080'
+ANSWERED_COLOR = '#D4EDDA'
+UNANSWERED_COLOR = '#F8D7DA'
+CURRENT_QUESTION_COLOR = '#CCE5FF'
 
 # Define the default filename for questions persistence
 QUESTIONS_FILE = "questions.json"
 STUDENT_PRACTICE_QUESTIONS_FILE = "student_practice_questions.json"
 
-import tkinter as tk
-from tkinter import filedialog, messagebox, scrolledtext
-import json
-import os
-
-
-# ... (rest of your existing constants like USERS, USER_ROLES, BG_COLOR, etc. remain the same) ...
-
 class QuizApp:
     def __init__(self):
         self.root = tk.Tk()
-        # Set the root window to be fully transparent initially
-        # This prevents it from flashing even if it's briefly mapped before withdrawing
         self.root.wm_attributes('-alpha', 0)
         self.root.withdraw()
         # Force Tkinter to process the withdraw and alpha commands immediately
@@ -52,8 +42,7 @@ class QuizApp:
 
         self.user_role = None
 
-        # self.active_quiz_data will store the current quiz's title, time limit, and questions
-        # Default structure if no quiz is loaded
+        # Default structure quiz
         self.active_quiz_data = {
             "title": "No Quiz Loaded",
             "time_limit_minutes": 1,  # Default time limit in minutes
@@ -65,20 +54,20 @@ class QuizApp:
         self.selected_answers = {}  # For student quiz answers
 
         # New variables for question creation flow
-        self.newly_created_questions = []  # Temporary storage for questions being created
-        self.current_question_index_creation = 0  # Index for navigating creation forms
-        self.create_win = None  # Reference to the question creation Toplevel window
-        self.quiz_title_entry = None  # To hold the Tkinter Entry for quiz title (initial input)
-        self.num_questions_entry = None  # To hold the Tkinter Entry for number of questions (initial input)
-        self.quiz_time_limit_entry = None  # New: To hold the Tkinter Entry for quiz time limit (initial input)
+        self.newly_created_questions = []
+        self.current_question_index_creation = 0
+        self.create_win = None
+        self.quiz_title_entry = None
+        self.num_questions_entry = None
+        self.quiz_time_limit_entry = None
 
-        self.current_quiz_title_being_created = ""  # To persistently store the quiz title during creation flow
-        self.current_quiz_time_limit_being_created = 0  # New: To persistently store the quiz time limit during creation flow
+        self.current_quiz_title_being_created = ""
+        self.current_quiz_time_limit_being_created = 0
 
         self.timer_seconds = 0  # Will be set dynamically by quiz data
         self.timer_running = False
 
-        # --- Persistence: Load questions at startup ---
+        #  Load questions at startup
         self._load_questions_on_startup()
 
         # Start with the role selection window
@@ -93,11 +82,6 @@ class QuizApp:
 
     def _on_button_leave(self, event):
         """Resets button background on mouse leave."""
-        # For general buttons, reset to BUTTON_BG_COLOR
-        # For navigation buttons, we need a more sophisticated logic
-        # For simplicity for now, they will revert to BUTTON_BG_COLOR on leave if this is called directly.
-        # If dynamic coloring is critical on hover out, it needs custom handling per button type.
-        # Reverting to the initially configured BUTTON_BG_COLOR for all buttons.
         event.widget.config(bg=BUTTON_BG_COLOR)
 
     def _load_questions_on_startup(self):
@@ -108,26 +92,24 @@ class QuizApp:
                     loaded_data = json.load(f)
 
                 if isinstance(loaded_data, list):
-                    # Old format: just a list of questions
                     self.active_quiz_data = {
                         "title": "Loaded Quiz",
                         "time_limit_minutes": 1,  # Default time for old format
                         "questions": loaded_data
                     }
-                    # Removed: messagebox.showinfo("Load Info", f"Loaded {len(loaded_data)} questions from old format {QUESTIONS_FILE}. Defaulting time limit to 1 minute.", parent=self.root)
                 elif isinstance(loaded_data, dict) and \
                         all(k in loaded_data for k in ["title", "time_limit_minutes", "questions"]) and \
                         isinstance(loaded_data["questions"], list):
-                    # New format: dict with title, time_limit, questions
+
                     self.active_quiz_data = loaded_data
-                    # Removed: messagebox.showinfo("Load Info", f"Loaded '{self.active_quiz_data['title']}' with {len(self.active_quiz_data['questions'])} questions (Time Limit: {self.active_quiz_data['time_limit_minutes']} mins) from {QUESTIONS_FILE}.", parent=self.root)
+
                 else:
                     messagebox.showwarning("Load Error",
                                            "Questions file format is invalid. Starting with no questions.",
                                            parent=self.root)
                     self.active_quiz_data = {"title": "No Quiz Loaded", "time_limit_minutes": 1, "questions": []}
 
-                # Basic validation for loaded questions within the list
+                # Basic validation for loaded questions
                 valid_questions = []
                 for q in self.active_quiz_data["questions"]:
                     if all(k in q for k in ("question", "options", "answer")) and \
@@ -151,7 +133,7 @@ class QuizApp:
             print(f"No {QUESTIONS_FILE} found. Starting with no questions.")
 
         self.questions = self.active_quiz_data[
-            "questions"]  # Ensure self.questions always references the active quiz's questions
+            "questions"]
 
     def _save_questions_to_file(self, quiz_data_to_save, filename=QUESTIONS_FILE):
         """
@@ -179,8 +161,7 @@ class QuizApp:
                         else:
                             print(f"Skipping invalid student practice question: {q}")
                     self.student_practice_questions = valid_questions
-                    # Removed: if valid_questions:
-                    # Removed:     messagebox.showinfo("Load Info", f"Loaded {len(valid_questions)} student practice questions from {STUDENT_PRACTICE_QUESTIONS_FILE}.", parent=self.root)
+
                 else:
                     messagebox.showwarning("Load Error",
                                            "Student practice questions file format is invalid. Starting with no practice questions.",
@@ -218,23 +199,19 @@ class QuizApp:
         if hasattr(self, 'lect_win') and self.lect_win.winfo_exists():
             self.lect_win.destroy()
         if hasattr(self, 'quiz_win') and self.quiz_win.winfo_exists():
-            # If a quiz window is open, ensure timer is stopped before closing
+            # ensures timer is stopped before closing
             if self.timer_running and self.timer_id:
                 self.quiz_win.after_cancel(self.timer_id)
                 self.timer_running = False
             self.quiz_win.destroy()
         if hasattr(self, 'student_menu_win') and self.student_menu_win.winfo_exists():
             self.student_menu_win.destroy()
-        # Close creation window if it's open
         if hasattr(self, 'create_win') and self.create_win and self.create_win.winfo_exists():
             self.create_win.destroy()
-        # Close initial create window if it's open
         if hasattr(self, 'create_start_win') and self.create_start_win and self.create_start_win.winfo_exists():
             self.create_start_win.destroy()
-        # Close student creation window if it's open
         if hasattr(self, 'student_create_win') and self.student_create_win and self.student_create_win.winfo_exists():
             self.student_create_win.destroy()
-        # Close student initial create window if it's open
         if hasattr(self,
                    'student_create_start_win') and self.student_create_start_win and self.student_create_start_win.winfo_exists():
             self.student_create_start_win.destroy()
@@ -243,11 +220,10 @@ class QuizApp:
         self.role_win.title("Quiz System - Select Role")
         self.role_win.geometry("300x180")
         self.role_win.protocol("WM_DELETE_WINDOW", self.root.destroy)
-        self.role_win.config(bg=BG_COLOR)  # Set window background to white
+        self.role_win.config(bg=BG_COLOR)
 
         tk.Label(self.role_win, text="Please select your role:", font=("Arial", 14), bg=BG_COLOR).pack(pady=20)
 
-        # Buttons with specified background and border colors
         lecturer_btn = tk.Button(self.role_win, text="Login as Lecturer", width=20,
                                  command=lambda: self.start_login("Lecturer"),
                                  bg=BUTTON_BG_COLOR, fg=BUTTON_TEXT_COLOR,
@@ -277,10 +253,9 @@ class QuizApp:
         self.login_win.title(f"Quiz System - Login ({self.chosen_role_for_login})")
         self.login_win.geometry("300x220")
         self.login_win.protocol("WM_DELETE_WINDOW", self.root.destroy)
-        self.login_win.config(bg=BG_COLOR)  # Set window background to white
+        self.login_win.config(bg=BG_COLOR)
 
         tk.Label(self.login_win, text="Username:", bg=BG_COLOR).pack(pady=(20, 5))
-        # Entry widget with specified background and border colors
         self.entry_username = tk.Entry(self.login_win, bg=ENTRY_BG_COLOR,
                                        highlightbackground=ENTRY_BORDER_COLOR, highlightthickness=2, bd=0)
         self.entry_username.pack()
@@ -291,7 +266,6 @@ class QuizApp:
                                        highlightbackground=ENTRY_BORDER_COLOR, highlightthickness=2, bd=0)
         self.entry_password.pack()
 
-        # Buttons with specified background and border colors
         login_btn = tk.Button(self.login_win, text="Login", width=15, command=self.try_login,
                               bg=BUTTON_BG_COLOR, fg=BUTTON_TEXT_COLOR,
                               bd=2, relief="groove", padx=10, pady=5)
@@ -336,48 +310,46 @@ class QuizApp:
     def lecturer_dashboard(self):
         self.lect_win = tk.Toplevel(self.root)
         self.lect_win.title("Lecturer Dashboard")
-        self.lect_win.geometry("600x350")  # Increased height for more buttons
+        self.lect_win.geometry("600x350")
         self.lect_win.protocol("WM_DELETE_WINDOW", lambda: self.return_to_role_selection(self.lect_win))
-        self.lect_win.config(bg=BG_COLOR)  # Set window background to white
+        self.lect_win.config(bg=BG_COLOR)
 
         tk.Label(self.lect_win, text="Lecturer Dashboard", font=("Arial", 16, "bold"), bg=BG_COLOR).pack(pady=20)
 
-        # Frame for buttons for better layout
+        # Frame for buttons ... better layout
         button_frame = tk.Frame(self.lect_win, bg=BG_COLOR)
         button_frame.pack(pady=10)
 
-        # Changed from "Upload Questions" to "Create Questions"
         self.create_questions_btn = tk.Button(button_frame, text="Create New Questions", width=25,
-                                              command=self.create_questions_flow_start,  # New command
+                                              command=self.create_questions_flow_start,
                                               bg=BUTTON_BG_COLOR, fg=BUTTON_TEXT_COLOR,
                                               bd=2, relief="groove", padx=10, pady=5)
-        self.create_questions_btn.grid(row=0, column=0, padx=10, pady=5)  # Using grid
+        self.create_questions_btn.grid(row=0, column=0, padx=10, pady=5)
         self.create_questions_btn.bind("<Enter>", self._on_button_enter)
         self.create_questions_btn.bind("<Leave>", self._on_button_leave)
 
-        self.view_questions_btn = tk.Button(button_frame, text="View Current Quiz Questions", width=25,  # Changed text
+        self.view_questions_btn = tk.Button(button_frame, text="View Current Quiz Questions", width=25,
                                             command=self.view_questions_window,
                                             bg=BUTTON_BG_COLOR, fg=BUTTON_TEXT_COLOR,
                                             bd=2, relief="groove", padx=10, pady=5)
-        self.view_questions_btn.grid(row=0, column=1, padx=10, pady=5)  # Using grid
+        self.view_questions_btn.grid(row=0, column=1, padx=10, pady=5)
         self.view_questions_btn.bind("<Enter>", self._on_button_enter)
         self.view_questions_btn.bind("<Leave>", self._on_button_leave)
 
         self.delete_questions_btn = tk.Button(button_frame, text="Delete All Questions in Current Quiz", width=25,
-                                              # Changed text
                                               command=self.delete_all_questions,
                                               bg=BUTTON_BG_COLOR, fg=BUTTON_TEXT_COLOR,
                                               bd=2, relief="groove", padx=10, pady=5)
-        self.delete_questions_btn.grid(row=1, column=0, padx=10, pady=5)  # Using grid
+        self.delete_questions_btn.grid(row=1, column=0, padx=10, pady=5)
         self.delete_questions_btn.bind("<Enter>", self._on_button_enter)
         self.delete_questions_btn.bind("<Leave>", self._on_button_leave)
 
-        # New button for loading questions from a file (optional, but good to have back)
-        self.load_from_file_btn = tk.Button(button_frame, text="Load Quiz from File (JSON)", width=25,  # Changed text
-                                            command=self.load_questions_from_file,  # New command
+        # New button for loading questions from a file
+        self.load_from_file_btn = tk.Button(button_frame, text="Load Quiz from File (JSON)", width=25,
+                                            command=self.load_questions_from_file,
                                             bg=BUTTON_BG_COLOR, fg=BUTTON_TEXT_COLOR,
                                             bd=2, relief="groove", padx=10, pady=5)
-        self.load_from_file_btn.grid(row=1, column=1, padx=10, pady=5)  # Using grid
+        self.load_from_file_btn.grid(row=1, column=1, padx=10, pady=5)
         self.load_from_file_btn.bind("<Enter>", self._on_button_enter)
         self.load_from_file_btn.bind("<Leave>", self._on_button_leave)
 
@@ -389,21 +361,18 @@ class QuizApp:
         return_btn.bind("<Enter>", self._on_button_enter)
         return_btn.bind("<Leave>", self._on_button_leave)
 
-        # Call a method to initially update button states based on whether questions are loaded
         self.update_lecturer_dashboard_buttons()
 
     def update_lecturer_dashboard_buttons(self):
         """Enables/disables buttons based on whether questions are loaded."""
         if self.questions:
-            # self.create_questions_btn.config(state=tk.DISABLED) # Keep enabled for continuous creation
             self.view_questions_btn.config(state=tk.NORMAL)
             self.delete_questions_btn.config(state=tk.NORMAL)
-            # self.load_from_file_btn.config(state=tk.DISABLED) # Keep enabled to allow loading other quizzes
+
         else:
             self.view_questions_btn.config(state=tk.DISABLED)
             self.delete_questions_btn.config(state=tk.DISABLED)
-            # self.create_questions_btn.config(state=tk.NORMAL) # Already default
-            # self.load_from_file_btn.config(state=tk.NORMAL) # Already default
+
 
     def load_questions_from_file(self):
         """Allows lecturer to load quiz data (title, time limit, questions) from a JSON file, replacing current quiz."""
@@ -416,10 +385,9 @@ class QuizApp:
                 new_active_quiz_data = None
 
                 if isinstance(loaded_data, list):
-                    # Old format: just a list of questions
                     new_active_quiz_data = {
                         "title": os.path.basename(file_path).replace(".json", ""),  # Use filename as title
-                        "time_limit_minutes": 1,  # Default time for old format
+                        "time_limit_minutes": 1,  # Default time
                         "questions": loaded_data
                     }
                     messagebox.showinfo("Load Info",
@@ -428,7 +396,7 @@ class QuizApp:
                 elif isinstance(loaded_data, dict) and \
                         all(k in loaded_data for k in ["title", "time_limit_minutes", "questions"]) and \
                         isinstance(loaded_data["questions"], list):
-                    # New format: dict with title, time_limit, questions
+
                     new_active_quiz_data = loaded_data
                     messagebox.showinfo("Load Info",
                                         f"Loaded '{new_active_quiz_data['title']}' with {len(new_active_quiz_data['questions'])} questions (Time Limit: {new_active_quiz_data['time_limit_minutes']} mins) from '{os.path.basename(file_path)}'.",
@@ -445,7 +413,7 @@ class QuizApp:
                             isinstance(q["options"], list) and len(q["options"]) == 4:
                         valid_new_questions.append(q)
                     else:
-                        print(f"Skipping invalid question from loaded file: {q}")  # For debugging
+                        print(f"Skipping invalid question from loaded file: {q}")
 
                 if valid_new_questions:
                     new_active_quiz_data["questions"] = valid_new_questions
@@ -470,15 +438,15 @@ class QuizApp:
     # --- New Question Creation Flow ---
     def create_questions_flow_start(self):
         """Initial window to ask for the number of questions to create, quiz title, and time limit."""
-        # Reset temporary questions and metadata for a new creation session
+        # Reset temporary questions
         self.newly_created_questions = []
         self.current_question_index_creation = 0
-        self.current_quiz_title_being_created = ""  # Reset title for new creation
-        self.current_quiz_time_limit_being_created = 0  # Reset time limit for new creation
+        self.current_quiz_title_being_created = ""  # Reset title for
+        self.current_quiz_time_limit_being_created = 0  # Reset time limit
 
         self.create_start_win = tk.Toplevel(self.lect_win)
         self.create_start_win.title("Create New Quiz")
-        self.create_start_win.geometry("400x300")  # Increased height
+        self.create_start_win.geometry("400x300")
         self.create_start_win.transient(self.lect_win)
         self.create_start_win.grab_set()
         self.create_start_win.config(bg=BG_COLOR)
@@ -495,7 +463,7 @@ class QuizApp:
         self.num_questions_entry = tk.Entry(self.create_start_win, width=10, bg=ENTRY_BG_COLOR,
                                             highlightbackground=ENTRY_BORDER_COLOR, highlightthickness=2, bd=0)
         self.num_questions_entry.pack(pady=5)
-        self.num_questions_entry.insert(0, "1")  # Default to 1 question
+        self.num_questions_entry.insert(0, "1")
 
         # New: Quiz Time Limit input
         tk.Label(self.create_start_win, text="Quiz Time Limit (minutes):", font=("Arial", 12), bg=BG_COLOR).pack(
@@ -503,7 +471,7 @@ class QuizApp:
         self.quiz_time_limit_entry = tk.Entry(self.create_start_win, width=10, bg=ENTRY_BG_COLOR,
                                               highlightbackground=ENTRY_BORDER_COLOR, highlightthickness=2, bd=0)
         self.quiz_time_limit_entry.pack(pady=5)
-        self.quiz_time_limit_entry.insert(0, "1")  # Default to 1 minute
+        self.quiz_time_limit_entry.insert(0, "1")
 
         start_creating_btn = tk.Button(self.create_start_win, text="Start Creating",
                                        command=self._start_question_form_from_initial,
@@ -537,9 +505,9 @@ class QuizApp:
                 return
 
             self.num_questions_to_create = num_q
-            self.current_quiz_title_being_created = quiz_title  # Store the title persistently
-            self.current_quiz_time_limit_being_created = time_limit_minutes  # Store the time limit persistently
-            self.create_start_win.destroy()  # Close the initial window
+            self.current_quiz_title_being_created = quiz_title  # Store the title
+            self.current_quiz_time_limit_being_created = time_limit_minutes  # Store the time limit
+            self.create_start_win.destroy()  # Close window
 
             # Initialize self.newly_created_questions with empty question structures
             self.newly_created_questions = [
@@ -555,7 +523,7 @@ class QuizApp:
     def display_question_creation_form(self):
         """Displays the form for inputting a single question."""
         if self.create_win and self.create_win.winfo_exists():
-            self.create_win.destroy()  # Close previous form if open
+            self.create_win.destroy()
 
         display_title = self.current_quiz_title_being_created if self.current_quiz_title_being_created else "New Quiz"
         self.create_win = tk.Toplevel(self.lect_win)
@@ -575,7 +543,6 @@ class QuizApp:
                                                  highlightthickness=2, bd=0)
         self.q_entry.pack(pady=5)
 
-        # Options Labels and Entries
         self.option_entries = []
         self.correct_option_var = tk.StringVar()
         option_labels = ["A", "B", "C", "D"]
@@ -590,16 +557,14 @@ class QuizApp:
             entry.pack(side=tk.LEFT, expand=True, fill="x")
             self.option_entries.append(entry)
 
-            # Radiobutton for selecting correct answer
             rb = tk.Radiobutton(opt_frame, text="Correct", variable=self.correct_option_var, value=label_text,
                                 bg=BG_COLOR, activebackground=BG_COLOR, selectcolor=BG_COLOR)
             rb.pack(side=tk.RIGHT, padx=5)
 
-        # Navigation and Save Buttons
+
         nav_frame = tk.Frame(self.create_win, bg=BG_COLOR)
         nav_frame.pack(pady=20)
 
-        # Save Current Question and Move Buttons
         prev_btn = tk.Button(nav_frame, text="Previous", width=10,
                              command=self._save_and_navigate_question_creation_form_prev,
                              bg=BUTTON_BG_COLOR, fg=BUTTON_TEXT_COLOR,
@@ -616,7 +581,7 @@ class QuizApp:
         next_btn.bind("<Enter>", self._on_button_enter)
         next_btn.bind("<Leave>", self._on_button_leave)
 
-        finalize_btn = tk.Button(self.create_win, text="Finalize & Save Quiz", width=20,  # Changed button text
+        finalize_btn = tk.Button(self.create_win, text="Finalize & Save Quiz", width=20,
                                  command=self._finalize_created_questions,
                                  bg=BUTTON_BG_COLOR, fg=BUTTON_TEXT_COLOR,
                                  bd=2, relief="groove", padx=10, pady=5)
@@ -643,10 +608,10 @@ class QuizApp:
             messagebox.showwarning("Missing Input", "Please select the correct answer.", parent=self.create_win)
             return False
 
-        # Convert option label (A, B, C, D) to the actual option text
+
         correct_answer_text = ""
         try:
-            # Map 'A' to index 0, 'B' to index 1, etc.
+            # Map 'A' to index 0
             correct_index = ord(correct_opt_label.upper()) - ord('A')
             if 0 <= correct_index < len(options):
                 correct_answer_text = options[correct_index]
@@ -679,7 +644,7 @@ class QuizApp:
 
             if q_data["answer"]:
                 try:
-                    # Find the label (A, B, C, D) corresponding to the answer text
+                    # Find the label (A B C D) corresponding to the answer
                     answer_index = q_data["options"].index(q_data["answer"])
                     self.correct_option_var.set(chr(ord('A') + answer_index))
                 except ValueError:  # Answer text not found in options
@@ -716,7 +681,7 @@ class QuizApp:
         if not self._save_current_question_input():  # Save the last question being edited
             return
 
-        # Perform a final check on all questions before saving
+        # Perform a final check
         if not self.newly_created_questions:
             messagebox.showwarning("No Questions", "No questions have been created to finalize.",
                                    parent=self.create_win)
@@ -746,14 +711,14 @@ class QuizApp:
 
         if file_path:
             self._save_questions_to_file(quiz_data_to_save, file_path)
-            # Make the newly created quiz the active quiz
+            # Make the new quiz the active quiz
             self.active_quiz_data = quiz_data_to_save
             self.questions = self.active_quiz_data["questions"]
-            self._save_questions_to_file(self.active_quiz_data)  # Also save as default questions.json
+            self._save_questions_to_file(self.active_quiz_data)
             messagebox.showinfo("Quiz Saved",
                                 f"Quiz '{quiz_data_to_save['title']}' saved successfully and set as active quiz!",
                                 parent=self.create_win)
-            self.create_win.destroy()  # Close creation window
+            self.create_win.destroy()
             self.update_lecturer_dashboard_buttons()  # Update lecturer dashboard buttons
         else:
             messagebox.showwarning("Save Cancelled", "Quiz save operation cancelled.", parent=self.create_win)
@@ -763,8 +728,8 @@ class QuizApp:
         if messagebox.askyesno("Cancel Creation",
                                "Are you sure you want to cancel quiz creation? Unsaved changes will be lost.",
                                parent=self.create_win):
-            self.create_win.destroy()  # Close the creation window
-            # Optionally clear temporary data if needed, but it's reset on next start anyway
+            self.create_win.destroy()
+
             self.newly_created_questions = []
             self.current_question_index_creation = 0
 
@@ -804,7 +769,7 @@ class QuizApp:
                 text_area.insert(tk.END, f"    {chr(65 + j)}. {option}\n")
             text_area.insert(tk.END, f"  Correct Answer: {q_data['answer']}\n\n")
 
-        text_area.config(state=tk.DISABLED)  # Make read-only
+        text_area.config(state=tk.DISABLED)
 
         close_btn = tk.Button(view_win, text="Close", command=view_win.destroy,
                               bg=BUTTON_BG_COLOR, fg=BUTTON_TEXT_COLOR,
@@ -823,8 +788,8 @@ class QuizApp:
                                parent=self.lect_win):
             self.active_quiz_data = {"title": "No Quiz Loaded", "time_limit_minutes": 1, "questions": []}
             self.questions = self.active_quiz_data["questions"]  # Update reference
-            self.selected_answers = {}  # Clear any student answers if quiz was in progress
-            self._save_questions_to_file(self.active_quiz_data)  # Save empty quiz to file
+            self.selected_answers = {}  # Clear any student answers
+            self._save_questions_to_file(self.active_quiz_data)  # Save to file
             messagebox.showinfo("Questions Deleted", "All questions have been deleted.", parent=self.lect_win)
             self.update_lecturer_dashboard_buttons()
 
@@ -832,7 +797,7 @@ class QuizApp:
         """Displays the student's main menu."""
         self.student_menu_win = tk.Toplevel(self.root)
         self.student_menu_win.title("Student Dashboard")
-        self.student_menu_win.geometry("400x280")  # Increased height for new button
+        self.student_menu_win.geometry("400x280")
         self.student_menu_win.protocol("WM_DELETE_WINDOW", lambda: self.return_to_role_selection(self.student_menu_win))
         self.student_menu_win.config(bg=BG_COLOR)
 
@@ -842,41 +807,41 @@ class QuizApp:
         button_frame.pack(pady=10)
 
         # Button to load and start the main quiz (lecturer's quiz)
-        main_quiz_btn = tk.Button(button_frame, text="Load & Start Main Quiz", width=25,  # Changed text for clarity
-                                  command=self.student_load_and_start_main_quiz,  # New dedicated method
+        main_quiz_btn = tk.Button(button_frame, text="Load & Start Main Quiz", width=25,
+                                  command=self.student_load_and_start_main_quiz,
                                   bg=BUTTON_BG_COLOR, fg=BUTTON_TEXT_COLOR,
                                   bd=2, relief="groove", padx=10, pady=5)
-        main_quiz_btn.grid(row=0, column=0, padx=10, pady=5)  # Using grid
+        main_quiz_btn.grid(row=0, column=0, padx=10, pady=5)
         main_quiz_btn.bind("<Enter>", self._on_button_enter)
         main_quiz_btn.bind("<Leave>", self._on_button_leave)
 
         # Button to create practice questions
         create_practice_btn = tk.Button(button_frame, text="Create My Practice Questions", width=25,
-                                        # Changed text for clarity
+
                                         command=self.student_create_questions_flow_start,
                                         bg=BUTTON_BG_COLOR, fg=BUTTON_TEXT_COLOR,
                                         bd=2, relief="groove", padx=10, pady=5)
-        create_practice_btn.grid(row=0, column=1, padx=10, pady=5)  # Using grid
+        create_practice_btn.grid(row=0, column=1, padx=10, pady=5)
         create_practice_btn.bind("<Enter>", self._on_button_enter)
         create_practice_btn.bind("<Leave>", self._on_button_leave)
 
         # Button to start a practice quiz from their own questions
         start_practice_btn = tk.Button(button_frame, text="Start My Practice Quiz", width=25,
-                                       # Changed text for clarity
+
                                        command=lambda: self.start_quiz(quiz_type="practice_my_questions"),
-                                       # Pass quiz type
+
                                        bg=BUTTON_BG_COLOR, fg=BUTTON_TEXT_COLOR,
                                        bd=2, relief="groove", padx=10, pady=5)
-        start_practice_btn.grid(row=1, column=0, padx=10, pady=5)  # Using grid
+        start_practice_btn.grid(row=1, column=0, padx=10, pady=5)
         start_practice_btn.bind("<Enter>", self._on_button_enter)
         start_practice_btn.bind("<Leave>", self._on_button_leave)
 
-        # NEW: Button to load and start an external quiz for practice
+# Button to load and start an external quiz for practice
         external_practice_btn = tk.Button(button_frame, text="Load & Start External Practice Quiz", width=25,
-                                          command=self.student_load_and_start_quiz_from_file,  # New method
+                                          command=self.student_load_and_start_quiz_from_file,
                                           bg=BUTTON_BG_COLOR, fg=BUTTON_TEXT_COLOR,
                                           bd=2, relief="groove", padx=10, pady=5)
-        external_practice_btn.grid(row=1, column=1, padx=10, pady=5)  # Using grid
+        external_practice_btn.grid(row=1, column=1, padx=10, pady=5)
         external_practice_btn.bind("<Enter>", self._on_button_enter)
         external_practice_btn.bind("<Leave>", self._on_button_leave)
 
@@ -901,21 +866,21 @@ class QuizApp:
                 quiz_data_to_use = None
 
                 if isinstance(loaded_data, list):
-                    # Old format: just a list of questions
+
                     quiz_data_to_use = {
                         "title": os.path.basename(file_path).replace(".json", ""),
-                        "time_limit_minutes": 1,  # Default time for old format
+                        "time_limit_minutes": 1,
                         "questions": loaded_data
                     }
                 elif isinstance(loaded_data, dict) and \
                         all(k in loaded_data for k in ["title", "time_limit_minutes", "questions"]) and \
                         isinstance(loaded_data["questions"], list):
-                    # New format: dict with title, time_limit, questions
+
                     quiz_data_to_use = loaded_data
                 else:
                     messagebox.showwarning("Load Error", "The selected file format is invalid. Cannot load main quiz.",
                                            parent=self.student_menu_win)
-                    return  # Exit if format is invalid
+                    return
 
                 # Validate questions within the list
                 valid_questions = []
@@ -924,8 +889,7 @@ class QuizApp:
                             isinstance(q["options"], list) and len(q["options"]) == 4:
                         valid_questions.append(q)
                     else:
-                        print(f"Skipping invalid question from loaded file: {q}")  # For debugging
-
+                        print(f"Skipping invalid question from loaded file: {q}")
                 if valid_questions:
                     quiz_data_to_use["questions"] = valid_questions
 
@@ -940,7 +904,7 @@ class QuizApp:
                     messagebox.showwarning("No Valid Questions",
                                            "The selected file contains no valid questions or is empty. Cannot start main quiz.",
                                            parent=self.student_menu_win)
-                    return  # Exit if no valid questions
+                    return
 
             except json.JSONDecodeError:
                 messagebox.showerror("Load Error", "Error decoding selected file (invalid JSON).",
@@ -961,31 +925,31 @@ class QuizApp:
                 quiz_data_to_use = None
 
                 if isinstance(loaded_data, list):
-                    # Old format: just a list of questions
+
                     quiz_data_to_use = {
                         "title": os.path.basename(file_path).replace(".json", "") + " (External Practice)",
-                        "time_limit_minutes": 1,  # Default time for old format
+                        "time_limit_minutes": 1,
                         "questions": loaded_data
                     }
                 elif isinstance(loaded_data, dict) and \
                         all(k in loaded_data for k in ["title", "time_limit_minutes", "questions"]) and \
                         isinstance(loaded_data["questions"], list):
-                    # New format: dict with title, time_limit, questions
+
                     quiz_data_to_use = loaded_data
-                    quiz_data_to_use["title"] += " (External Practice)"  # Append to title for clarity
+                    quiz_data_to_use["title"] += " (External Practice)"
                 else:
                     messagebox.showwarning("Load Error", "The selected file format is invalid. Cannot start quiz.",
                                            parent=self.student_menu_win)
-                    return  # Exit if format is invalid
+                    return
 
-                # Validate questions within the list
+                # Validate questions
                 valid_questions = []
                 for q in quiz_data_to_use["questions"]:
                     if all(k in q for k in ("question", "options", "answer")) and \
                             isinstance(q["options"], list) and len(q["options"]) == 4:
                         valid_questions.append(q)
                     else:
-                        print(f"Skipping invalid question from loaded file: {q}")  # For debugging
+                        print(f"Skipping invalid question from loaded file: {q}")
 
                 if valid_questions:
                     quiz_data_to_use["questions"] = valid_questions
@@ -1007,7 +971,7 @@ class QuizApp:
     # --- Student Practice Question Creation Flow ---
     def student_create_questions_flow_start(self):
         """Initial window for students to create practice questions."""
-        # Reset temporary questions and metadata for a new creation session
+        # Reset temporary questions
         self.newly_created_questions = []  # Use this temp list for student creation too
         self.current_student_q_index_creation = 0
         self.current_student_quiz_title = "My Practice Quiz"  # Default title for student quizzes
@@ -1025,7 +989,7 @@ class QuizApp:
         self.student_num_q_entry = tk.Entry(self.student_create_start_win, width=10, bg=ENTRY_BG_COLOR,
                                             highlightbackground=ENTRY_BORDER_COLOR, highlightthickness=2, bd=0)
         self.student_num_q_entry.pack(pady=5)
-        self.student_num_q_entry.insert(0, "1")  # Default to 1 question
+        self.student_num_q_entry.insert(0, "1")
 
         start_creating_btn = tk.Button(self.student_create_start_win, text="Start Creating",
                                        command=self._student_start_question_form_from_initial,
@@ -1047,9 +1011,9 @@ class QuizApp:
                 return
 
             self.num_student_questions_to_create = num_q
-            self.student_create_start_win.destroy()  # Close the initial window
+            self.student_create_start_win.destroy()
 
-            # Initialize self.newly_created_questions (used as temp storage) with empty structures
+            # Initialize self.newly_created_question
             self.newly_created_questions = [
                 {"question": "", "options": ["", "", "", ""], "answer": ""}
                 for _ in range(self.num_student_questions_to_create)
@@ -1063,7 +1027,7 @@ class QuizApp:
     def _student_display_question_creation_form(self):
         """Displays the form for inputting a single practice question for students."""
         if self.student_create_win and self.student_create_win.winfo_exists():
-            self.student_create_win.destroy()  # Close previous form if open
+            self.student_create_win.destroy()
 
         self.student_create_win = tk.Toplevel(self.student_menu_win)
         self.student_create_win.title(
@@ -1074,7 +1038,6 @@ class QuizApp:
         self.student_create_win.config(bg=BG_COLOR)
         self.student_create_win.protocol("WM_DELETE_WINDOW", self._cancel_student_question_creation)
 
-        # Question Label and Entry
         tk.Label(self.student_create_win, text=f"Practice Question {self.current_student_q_index_creation + 1}:",
                  font=("Arial", 12, "bold"), bg=BG_COLOR).pack(pady=(10, 5))
         self.student_q_entry = scrolledtext.ScrolledText(self.student_create_win, wrap=tk.WORD, width=70, height=4,
@@ -1083,7 +1046,7 @@ class QuizApp:
                                                          highlightthickness=2, bd=0)
         self.student_q_entry.pack(pady=5)
 
-        # Options Labels and Entries
+
         self.student_option_entries = []
         self.student_correct_option_var = tk.StringVar()
         option_labels = ["A", "B", "C", "D"]
@@ -1098,7 +1061,7 @@ class QuizApp:
             entry.pack(side=tk.LEFT, expand=True, fill="x")
             self.student_option_entries.append(entry)
 
-            # Radiobutton for selecting correct answer
+            # selecting correct answer
             rb = tk.Radiobutton(opt_frame, text="Correct", variable=self.student_correct_option_var, value=label_text,
                                 bg=BG_COLOR, activebackground=BG_COLOR, selectcolor=BG_COLOR)
             rb.pack(side=tk.RIGHT, padx=5)
@@ -1163,7 +1126,7 @@ class QuizApp:
                                  parent=self.student_create_win)
             return False
 
-        # Store in the temporary list used for creation
+        # Store in the temp list used for creation
         self.newly_created_questions[self.current_student_q_index_creation] = {
             "question": q_text,
             "options": options,
@@ -1241,8 +1204,8 @@ class QuizApp:
         messagebox.showinfo("Practice Questions Saved",
                             f"Successfully saved {len(self.newly_created_questions)} practice questions!",
                             parent=self.student_create_win)
-        self.student_create_win.destroy()  # Close creation window
-        self.newly_created_questions = []  # Clear temporary list after saving
+        self.student_create_win.destroy()
+        self.newly_created_questions = []
 
     def _cancel_student_question_creation(self):
         """Handles cancellation of student question creation, with confirmation."""
@@ -1261,8 +1224,6 @@ class QuizApp:
         """
 
         if quiz_type == "main":
-            # For "main" quiz, if override is provided (from student_load_and_start_main_quiz), use it.
-            # Otherwise, use the globally active quiz.
             quiz_to_use = quiz_data_override if quiz_data_override else self.active_quiz_data
             quiz_questions = quiz_to_use["questions"]
             quiz_title_display = quiz_to_use['title']
@@ -1270,7 +1231,7 @@ class QuizApp:
         elif quiz_type == "practice_my_questions":
             quiz_questions = self.student_practice_questions
             quiz_title_display = "My Practice Quiz"
-            quiz_time_limit = 1  # Default time limit for student created questions
+            quiz_time_limit = 1
         elif quiz_type == "external_practice" and quiz_data_override:
             quiz_questions = quiz_data_override["questions"]
             quiz_title_display = quiz_data_override["title"]
@@ -1301,11 +1262,11 @@ class QuizApp:
         self.quiz_win.config(bg=BG_COLOR)
 
         self.current_question = 0
-        self.selected_answers = {}  # Reset answers for a new quiz
-        self.quiz_questions_to_use = quiz_questions  # Store reference to which questions are being used
+        self.selected_answers = {}
+        self.quiz_questions_to_use = quiz_questions
 
         # Timer setup
-        self.timer_seconds = quiz_time_limit * 60  # Convert minutes to seconds
+        self.timer_seconds = quiz_time_limit * 60
         self.timer_var = tk.StringVar()
         self.timer_label = tk.Label(self.quiz_win, textvariable=self.timer_var, font=("Arial", 12, "bold"), bg=BG_COLOR,
                                     fg="red")
@@ -1328,12 +1289,12 @@ class QuizApp:
             rb.pack(pady=5, padx=30, fill="x")
             self.option_radiobuttons.append(rb)
 
-        # Question Navigation Buttons (will be dynamic)
+        # Question Navigation Buttons
         self.nav_button_frame = tk.Frame(self.quiz_win, bg=BG_COLOR)
         self.nav_button_frame.pack(pady=10)
         self.question_nav_buttons = []  # To store references to individual question nav buttons
 
-        # Initialize navigation buttons (placeholder, will be updated by update_question)
+        # Initialize navigation buttons
         self.create_question_navigation_buttons()
 
         nav_control_frame = tk.Frame(self.quiz_win, bg=BG_COLOR)
@@ -1381,7 +1342,7 @@ class QuizApp:
             btn = tk.Button(self.nav_button_frame, text=str(i + 1), width=3, height=1,
                             command=lambda idx=i: self.goto_question(idx),
                             bg=BUTTON_BG_COLOR, fg=BUTTON_TEXT_COLOR,
-                            bd=1, relief="groove", padx=5, pady=2)  # Smaller border for these small buttons
+                            bd=1, relief="groove", padx=5, pady=2)
             btn.grid(row=0, column=i, padx=2, pady=2)
             btn.bind("<Enter>", self._on_button_enter)
             btn.bind("<Leave>", self._on_button_leave)
@@ -1392,36 +1353,16 @@ class QuizApp:
         """Updates the colors of question navigation buttons based on answer status."""
         for i, btn in enumerate(self.question_nav_buttons):
             if i == self.current_question:
-                # Ensure the current question button also has a hover effect
-                btn.config(bg=CURRENT_QUESTION_COLOR, bd=2)  # Slightly thicker border for current
-                # Store original bg to restore from on leave
+
+                btn.config(bg=CURRENT_QUESTION_COLOR, bd=2)
                 btn.hover_original_bg = CURRENT_QUESTION_COLOR
-            elif i in self.selected_answers:  # Question has been answered
+            elif i in self.selected_answers:
                 btn.config(bg=ANSWERED_COLOR, bd=1)
                 btn.hover_original_bg = ANSWERED_COLOR
-            else:  # Question is unanswered
+            else:
                 btn.config(bg=UNANSWERED_COLOR, bd=1)
                 btn.hover_original_bg = UNANSWERED_COLOR
 
-            # Re-bind hover for dynamic color buttons to ensure correct original color is used
-            # We'll need to modify _on_button_leave to use btn.hover_original_bg
-            # For now, let's just make sure the config sets the base color.
-            # The simple _on_button_enter/_on_button_leave will apply, potentially making
-            # the nav buttons lose their specific state color on hover.
-
-            # Alternative approach for colored buttons:
-            # Create a separate hover function for nav buttons that checks their current state color
-            # Or, modify _on_button_leave to reset to the color it *should* be based on state.
-            # Let's modify _on_button_leave for this.
-
-            # We need to make a slight adjustment to the _on_button_leave to account for
-            # the state-based background color of navigation buttons.
-            # For simplicity, I will modify the general _on_button_leave to check if
-            # the button is a navigation button and reset its color based on its state.
-
-            # If the user asks for more specific hover on nav buttons, we can refine this.
-            # For now, the current _on_button_enter/_leave will apply, potentially making
-            # the nav buttons lose their specific state color on hover.
             pass
 
     def goto_question(self, index):
@@ -1452,9 +1393,9 @@ class QuizApp:
     def _save_current_answer(self):
         """Saves the student's selected answer for the current question."""
         selected_option = self.radio_var.get()
-        if selected_option:  # Only save if an option is selected
+        if selected_option:  #  if an option is selected
             self.selected_answers[self.current_question] = selected_option
-        else:  # If no option selected, ensure it's not marked as answered
+        else:  # If no option selected
             if self.current_question in self.selected_answers:
                 del self.selected_answers[self.current_question]
 
@@ -1531,7 +1472,7 @@ class QuizApp:
 
         percentage_score = (correct_answers / total_questions) * 100 if total_questions > 0 else 0
 
-        self.quiz_win.destroy()  # Close the quiz window
+        self.quiz_win.destroy()
         self.display_results(correct_answers, total_questions, percentage_score, results_details)
 
     def display_results(self, correct, total, percentage, details):
@@ -1567,7 +1508,7 @@ class QuizApp:
 
         results_text_area.tag_config("green_text", foreground="green")
         results_text_area.tag_config("red_text", foreground="red")
-        results_text_area.config(state=tk.DISABLED)  # Make read-only
+        results_text_area.config(state=tk.DISABLED)
 
         return_btn = tk.Button(results_win, text="Return to Student Dashboard", width=25,
                                command=lambda: (results_win.destroy(), self.student_menu_dashboard()),
@@ -1592,7 +1533,7 @@ class QuizApp:
             current_window.destroy()
             self.student_menu_dashboard()
         else:
-            # If user cancels exit, restart the timer if it was running
+
             self.timer_running = True
             self.start_timer()  # Resume timer
 
